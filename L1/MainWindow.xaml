@@ -1,0 +1,266 @@
+﻿<Window x:Class="GMaGD.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Coordinate System" Height="760" Width="1200"
+        WindowStartupLocation="CenterScreen"
+        Loaded="Window_Loaded">
+
+      <Window.Resources>
+        <!-- Конвертер для видимості -->
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+
+        <!-- Темний стиль для тексту -->
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <!-- Стиль для кнопок -->
+        <Style TargetType="Button">
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Background" Value="#3A3F44"/> <!-- Темно-сірий -->
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="Black" BlurRadius="5" ShadowDepth="2"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+
+            <!-- Анімація при натисканні -->
+            <Style.Triggers>
+                <EventTrigger RoutedEvent="Button.PreviewMouseDown">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                             To="0.95" Duration="0:0:0.1"/>
+                            <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                             To="0.95" Duration="0:0:0.1"/>
+                            <ColorAnimation Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                            To="#2D3238" Duration="0:0:0.1"/> <!-- Трохи темніше -->
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+                <EventTrigger RoutedEvent="Button.PreviewMouseUp">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleX)"
+                                             To="1" Duration="0:0:0.1"/>
+                            <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(ScaleTransform.ScaleY)"
+                                             To="1" Duration="0:0:0.1"/>
+                            <ColorAnimation Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                            To="#3A3F44" Duration="0:0:0.1"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+    
+    <Grid Background="Transparent">
+        <!-- Полотно для малювання -->
+        <ScrollViewer Margin="15" HorizontalAlignment="Left" MinHeight="700" MinWidth="875" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <Canvas Name="DrawingCanvas" Background="White"  
+                    Height="2400" Width="2400" MouseMove="DrawingCanvas_MouseMove"/>
+        </ScrollViewer>
+
+        <!-- Панель для налаштувань -->
+        <ScrollViewer Margin="0,30,40,30" HorizontalAlignment="Right" VerticalAlignment="Top"
+                      Height="Auto" Width="280" VerticalScrollBarVisibility="Auto">
+            <StackPanel Background="DimGray" Effect="{DynamicResource ShadowEffect}">
+                <!-- Поле для пікселів на сантиметр -->
+                <WrapPanel>
+                    <TextBlock Margin="5" FontWeight="SemiBold">PxPerCm (px/cm):</TextBlock>
+                    <TextBox x:Name="PxPerCmInput" Width="50" Margin="5"/>
+                </WrapPanel>
+                <WrapPanel HorizontalAlignment="Center">
+                    <Button Content="Apply" Width="90" Click="ApplySettingsPxPerCm_Click" />
+                </WrapPanel>
+                
+                <!-- Поле для діаметра великого кола -->
+               
+                
+                <WrapPanel>
+                    <TextBlock Margin="5">AB:</TextBlock>
+                    <TextBox Name="AbInput" Width="50" Margin="5" Text="0"/>
+                    <TextBlock Margin="5">BC:</TextBlock>
+                    <TextBox Name="BcInput" Width="50" Margin="5" Text="0"/>
+                    <TextBlock Margin="5">CD:</TextBlock>
+                    <TextBox Name="CdInput" Width="50" Margin="5" Text="0"/>
+                </WrapPanel>
+                
+                <WrapPanel>
+                    <TextBlock Margin="5">DE:</TextBlock>
+                    <TextBox Name="DeInput" Width="50" Margin="5" Text="0"/>
+                    <TextBlock Margin="5">EF:</TextBlock>
+                    <TextBox Name="EfInput" Width="50" Margin="5" Text="0"/>
+                    <TextBlock Margin="5">GH:</TextBlock>
+                    <TextBox Name="GhInput" Width="50" Margin="5" Text="0"/>
+                </WrapPanel>
+                <WrapPanel>
+                    <TextBlock Margin="5">HI:</TextBlock>
+                    <TextBox Name="HiInput" Width="50" Margin="5" Text="0"/>
+                    <TextBlock Margin="5">IJ:</TextBlock>
+                    <TextBox Name="IjInput" Width="50" Margin="5" Text="0"/>
+                    <TextBlock Margin="5">JK:</TextBlock>
+                    <TextBox Name="JkInput" Width="50" Margin="5" Text="0"/>
+                </WrapPanel>
+                <WrapPanel>
+                    <TextBlock Margin="5">KL:</TextBlock>
+                    <TextBox Name="KlInput" Width="50" Margin="5" Text="0"/>
+                    
+                </WrapPanel>
+                <TextBlock Margin="5" FontWeight="SemiBold">Radius:</TextBlock>
+                <WrapPanel>
+                    <TextBlock Margin="5">FG:</TextBlock>
+                    <TextBox Name="SmallArcRadius" Width="50" Margin="5" Text="20"/>
+                    <TextBlock Margin="5">LA:</TextBlock>
+                    <TextBox Name="LargeArcRadius" Width="50" Margin="5" Text="20"/>
+                </WrapPanel>
+                
+                <WrapPanel HorizontalAlignment="Center">
+                    <Button Content="Apply" Width="90" Click="ApplySettings_Click" />
+                </WrapPanel>
+                
+                <StackPanel Margin="20,8,20,2">
+                    <TextBlock Margin="5">Rotation:</TextBlock>
+                    <WrapPanel>
+                        <TextBlock Margin="5">X</TextBlock>
+                        <TextBox x:Name="RotationXInput" Width="50" Text="150" Margin="5" />    
+                        <TextBlock Margin="5">Angle</TextBlock>
+                        <TextBox x:Name="RotationAngleInput" Width="50" Text="0" Margin="5"/>   
+                    </WrapPanel>
+                    <WrapPanel>
+                        <TextBlock Margin="5">Y</TextBlock>
+                        <TextBox x:Name="RotationYInput" Width="50" Text="250" Margin="5" /> 
+                    
+                        <Button Margin="5" Content="Rotate" Width="90" Click="ApplyRotation_Click" />
+                    </WrapPanel>
+                </StackPanel>
+            
+                <StackPanel Margin="10,5">
+                    <TextBlock Margin="5">Location:</TextBlock>
+                    <WrapPanel>
+                        <TextBlock Margin="5">X</TextBlock>
+                        <TextBox x:Name="LocationXInput" Width="50" Text="150" Margin="5" />    
+                        <TextBlock Margin="5">Y</TextBlock>
+                        <TextBox x:Name="LocationYInput" Width="50" Text="250" Margin="5" /> 
+                        <Button   Margin="5" Content="Locate" Width="90" Click="ApplyLocation_Click" />
+                    </WrapPanel>
+                </StackPanel>
+                
+                <StackPanel Margin="10,5">
+                    <CheckBox x:Name="ReflectionCheckBox" Content="Reflection:" Margin="5" Checked="AffineCheckBox_Checked" Unchecked="AffineCheckBox_Unchecked"/>
+                    <WrapPanel>
+                        <TextBlock Margin="5">X</TextBlock>
+                        <TextBox x:Name="ReflectionXInput" Width="50" Text="150" Margin="5" />    
+                        <TextBlock Margin="5">Y</TextBlock>
+                        <TextBox x:Name="ReflectionYInput" Width="50" Text="250" Margin="5" />
+                        <Button   Margin="5" Content="Locate" Width="90" Click="ApplyReflection_Click" />
+                    </WrapPanel>
+                </StackPanel>
+                
+                <StackPanel Margin="10,5">
+                    <TextBlock Margin="5">Scaling:</TextBlock>
+                    <WrapPanel>
+                        <TextBlock Margin="5">Sx</TextBlock>
+                        <TextBox x:Name="SxInput" Width="50" Text="150" Margin="5" />    
+                        <TextBlock Margin="5">Sy</TextBlock>
+                        <TextBox x:Name="SyInput" Width="50" Text="250" Margin="5" />
+                        <Button   Margin="5" Content="Apply" Width="90" Click="ApplyScaling_Click" />
+                    </WrapPanel>
+                </StackPanel>
+                
+
+                <!-- Додаткові налаштування -->
+                <TextBlock Margin="10,15,0,5" FontWeight="Bold">Additional Settings</TextBlock>
+                
+                <!-- Налаштування Affine та Projective -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10">
+                    <CheckBox x:Name="AffineCheckBox" Content="Affine" Margin="5" Checked="AffineCheckBox_Checked" Unchecked="AffineCheckBox_Unchecked"/>
+                    <CheckBox x:Name="ProjectiveCheckBox" Content="Projective" Margin="5" Checked="ProjectiveCheckBox_Checked" Unchecked="ProjectiveCheckBox_Unchecked"/>
+                </StackPanel>
+
+                  <StackPanel x:Name="Affine" Margin="20,10" Visibility="{Binding ElementName=AffineCheckBox, Path=IsChecked, Converter={StaticResource BoolToVisibilityConverter}}">
+                <TextBlock Margin="5">AffineTransformation:</TextBlock>
+                <WrapPanel>
+                    <TextBlock Margin="5">xX</TextBlock>
+                    <TextBox x:Name="xXInput" Width="40" Text="1" Margin="5" />    
+                    <TextBlock Margin="5">yX</TextBlock>
+                    <TextBox x:Name="yXInput" Width="40" Text="0" Margin="5" /> 
+                    <TextBlock Background="Azure" Width="40" Margin="10, 5, 5, 5">0</TextBlock>
+                </WrapPanel>
+                <WrapPanel>
+                    <TextBlock Margin="5">xY</TextBlock>
+                    <TextBox x:Name="xYInput" Width="40" Text="0" Margin="5" />    
+                    <TextBlock Margin="5">yY</TextBlock>
+                    <TextBox x:Name="yYInput" Width="40" Text="1" Margin="5" />
+                    <TextBlock Background="Azure" Width="40" Margin="10, 5, 5, 5">0</TextBlock>
+                </WrapPanel>
+                <WrapPanel>
+                    <TextBlock Margin="5">x0</TextBlock>
+                    <TextBox x:Name="x0Input" Width="40" Text="0" Margin="5" />    
+                    <TextBlock Margin="5">y0</TextBlock>
+                    <TextBox x:Name="y0Input" Width="40" Text="0" Margin="5" /> 
+                    <TextBlock Background="Azure" Width="40" Margin="10, 5, 5, 5">1</TextBlock>
+                </WrapPanel>
+                <WrapPanel HorizontalAlignment="Center">
+                    <Button   Margin="5" Content="Transform" Width="90" Click="ApplyAffineTransformation_Click" />
+                </WrapPanel>
+            </StackPanel>
+            
+            <StackPanel x:Name="Projective" Margin="20,10" Visibility="{Binding ElementName=ProjectiveCheckBox, Path=IsChecked, Converter={StaticResource BoolToVisibilityConverter}}">
+                <TextBlock Margin="5">ProjectiveTransformation: </TextBlock>
+                <WrapPanel>
+                    <TextBlock Margin="5">xX</TextBlock>
+                    <TextBox x:Name="xXwInput" Width="40"  Margin="5" />    
+                    <TextBlock Margin="5">yX</TextBlock>
+                    <TextBox x:Name="yXwInput" Width="40"  Margin="5" /> 
+                    <TextBlock Margin="5">wX</TextBlock>
+                    <TextBox x:Name="wXInput" Width="40"  Margin="5" /> 
+                </WrapPanel>
+                <WrapPanel>
+                    <TextBlock Margin="5">xY</TextBlock>
+                    <TextBox x:Name="xYwInput" Width="40"  Margin="5" />    
+                    <TextBlock Margin="5">yY</TextBlock>
+                    <TextBox x:Name="yYwInput" Width="40"  Margin="5" />
+                    <TextBlock Margin="5">wY</TextBlock>
+                    <TextBox x:Name="wYInput" Width="40"  Margin="5" /> 
+                </WrapPanel>
+                <WrapPanel>
+                    <TextBlock Margin="5">x0</TextBlock>
+                    <TextBox x:Name="x0wInput" Width="40"  Margin="5" />    
+                    <TextBlock Margin="5">y0</TextBlock>
+                    <TextBox x:Name="y0wInput" Width="40" Margin="5" /> 
+                    <TextBlock Margin="5">wX</TextBlock>
+                    <TextBox x:Name="w0Input" Width="40" Margin="5" /> 
+                </WrapPanel>
+                <WrapPanel HorizontalAlignment="Center">
+                    <Button   Margin="5" Content="Transform" Width="90" Click="ApplyProjectiveTransformation_Click" />
+                </WrapPanel>
+            </StackPanel>
+            </StackPanel>
+            </ScrollViewer>
+    </Grid>
+</Window>
