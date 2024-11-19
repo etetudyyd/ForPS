@@ -17,3 +17,4 @@ C:\Users\dimar\RiderProjects\GMaGD\L1\obj\Debug\net8.0-windows\refint\L1.dll
 C:\Users\dimar\RiderProjects\GMaGD\L1\obj\Debug\net8.0-windows\L1.pdb
 C:\Users\dimar\RiderProjects\GMaGD\L1\obj\Debug\net8.0-windows\L1.genruntimeconfig.cache
 C:\Users\dimar\RiderProjects\GMaGD\L1\obj\Debug\net8.0-windows\ref\L1.dll
+C:\Users\dimar\RiderProjects\GMaGD\L1\obj\Debug\net8.0-windows\L1.sourcelink.json

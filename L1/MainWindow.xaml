@@ -96,6 +96,7 @@
                 </WrapPanel>
                 <WrapPanel HorizontalAlignment="Center">
                     <Button Content="Apply" Width="90" Click="ApplySettingsPxPerCm_Click" />
+                    <Button Content="Clear Canvas" Width="90" Click="ApplyClearCanvas_Click" />
                 </WrapPanel>
                 
                 <!-- Поле для діаметра великого кола -->

@@ -12,13 +12,13 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using GMaGD.Models;
 using Line = GMaGD.Models.Line;
+using Point = GMaGD.Models.Point;
 
 namespace GMaGD;
 
 public partial class MainWindow : Window
 {
-    private static double _pxPerCm = 2;
-    private static double _centerLineLength = 135;
+    private static double _pxPerCm = 10;
     private const double LineThickness = 1;
     private const double CoordLineThickness = 0.25;
     private double AxisThickness = 3;
@@ -28,17 +28,21 @@ public partial class MainWindow : Window
     private double locationX = 50;
     private double locationY = 50;
     
+    private double Sx = 1;
+    private double Sy = 1;
+    private double X = 75;
+    private double Y = 75;
     private double xX = 1;
     private double yX = 0;
     private double xY = 0;
     private double yY = 1;
     private double x0 = 0;
     private double y0 = 0;
-    private double xXw = 150;
+    private double xXw = 1500;
     private double xYw = 0;
     private double wX = 1;
     private double yXw = 0;
-    private double yYw = 150;
+    private double yYw = 1500;
     private double wY = 1;
     private double x0w = 0;
     private double y0w = 0;
@@ -58,17 +62,9 @@ public partial class MainWindow : Window
     private double Jk = 15;
     private double Kl = 15;
     
-    private double Sx = 1;
-    private double Sy = 1;
-    private double RefX = 15;
-    private double RefY = 10;
-
     public MainWindow()
     {
         InitializeComponent();
-        
-        DrawCoordinateSystem();
-        DrawShape();
     }
     
     private void DrawShape()
@@ -82,9 +78,9 @@ public partial class MainWindow : Window
      
         double[][] reflectMatrix =
         [
-            [-1, 0, 0],
-            [0, -1, 0],
-            [2*RefX, 2*RefY, 1]
+            [1, 0, 0],
+            [0, 1, 0],
+            [2*X, 2*Y, 1]
         ];
         
         double[][] matrixAffine =
@@ -99,34 +95,56 @@ public partial class MainWindow : Window
             [xYw * wY, yYw * wY, wY],
             [x0w * w0, y0w * w0, w0]
         ];
+        
+        Point center = new Point(locationX, locationY);
+        Point initCenter = center;
+        Point rotateCenter = new Point(rotationX, rotationY);
+        Arc smallArc = new Arc(90, 270, initCenter, _smallArcRadius);
+        Arc largeArc = new Arc(134.5, 224.5, initCenter, _largeArcRadius);
+        
+        if (AffineCheckBox.IsChecked == true)
+        {
+            center = AffineTransformation(center, matrixAffine);
+        }
+        else if(ProjectiveCheckBox.IsChecked == true)
+        {
+            _pxPerCm = 1;
+            center = ProjectiveTransformation(center, matrixProjective);
+        }
 
-        Dot center = new Dot(locationX, locationY);
         
-        Dot rotateCenter = new Dot(rotationX, rotationY);
+        if (AffineCheckBox.IsChecked == true)
+        {
+            rotateCenter = AffineTransformation(rotateCenter, matrixAffine);
+        }
+        else if(ProjectiveCheckBox.IsChecked == true)
+        {
+            rotateCenter = ProjectiveTransformation(rotateCenter, matrixProjective);
+        }
+       
+       
         
-        Arc smallArc = new Arc(90, 270, center, _smallArcRadius);
-        Arc largeArc = new Arc(134.5, 224.5, center, _largeArcRadius);
-        
-        DrawDot(Px(rotateCenter.X), Px(rotateCenter.Y), _pxPerCm/3, Brushes.Blue, LineThickness);
+        DrawPoint(Px(rotateCenter.X), Px(rotateCenter.Y), _pxPerCm/3, Brushes.Blue, LineThickness);
         
         
         var fgDots = GetArcEndPoints(smallArc.Center, smallArc.Radius, smallArc.StartAngle, smallArc.EndAngle);
         var laDots = GetArcEndPoints(largeArc.Center, largeArc.Radius, largeArc.StartAngle, largeArc.EndAngle + 1);
         
-        DrawDot(center.X, center.Y, 1/_pxPerCm, Brushes.Black, LineThickness);
+        DrawPoint(center.X, center.Y, 1/_pxPerCm, Brushes.Black, LineThickness);
 
-        Dot A = new Dot(Cm(laDots.startPoint.X), Cm(laDots.startPoint.Y));
-        Dot L = new Dot(Cm(laDots.endPoint.X), Cm(laDots.endPoint.Y));
-        Dot G = new Dot(Cm(fgDots.endPoint.X), Cm(fgDots.endPoint.Y));
-        Dot F = new Dot(Cm(fgDots.startPoint.X), Cm(fgDots.startPoint.Y));
-        Dot E = new Dot(F.X + (Ef), F.Y);
-        Dot H = new Dot(G.X + (Gh), G.Y);
-        Dot D = new Dot(E.X, E.Y - (De));
-        Dot I = new Dot(H.X, H.Y + (Hi));
-        Dot C = new Dot(D.X + (Cd), D.Y);
-        Dot J = new Dot(I.X + (Ij), I.Y);
-        Dot B = new Dot(C.X  + Ab - 15, C.Y + (Bc));
-        Dot K = new Dot(J.X + Kl - 15, J.Y - (Jk));
+        
+        Point A = new Point(Cm(laDots.startPoint.X), Cm(laDots.startPoint.Y));
+        Point L = new Point(Cm(laDots.endPoint.X), Cm(laDots.endPoint.Y));
+        Point G = new Point(Cm(fgDots.endPoint.X), Cm(fgDots.endPoint.Y));
+        Point F = new Point(Cm(fgDots.startPoint.X), Cm(fgDots.startPoint.Y));
+        Point E = new Point(F.X + (Ef), F.Y);
+        Point H = new Point(G.X + (Gh), G.Y);
+        Point D = new Point(E.X, E.Y - (De));
+        Point I = new Point(H.X, H.Y + (Hi));
+        Point C = new Point(D.X + (Cd), D.Y);
+        Point J = new Point(I.X + (Ij), I.Y);
+        Point B = new Point(C.X  + Ab - 15, C.Y + (Bc));
+        Point K = new Point(J.X + Kl - 15, J.Y - (Jk));
         
         A = pointEuclidRotation(A, rotateCenter, rotationAngle);
         L = pointEuclidRotation(L, rotateCenter, rotationAngle);
@@ -143,16 +161,75 @@ public partial class MainWindow : Window
         
         center = pointEuclidRotation(center, rotateCenter, rotationAngle);
 
-        smallArc.Center = center;
-        largeArc.Center = center;
+        if (ReflectionCheckBox.IsChecked == true)
+        {
+            center = ReflectPoint(center, reflectMatrix);
+            smallArc.Center = center;
+            largeArc.Center = center;
+        }
         
-        DrawDot(Px(center.X), Px(center.Y), _pxPerCm/3, Brushes.Black, LineThickness);
-       
+        DrawPoint(Px(center.X), Px(center.Y), _pxPerCm/3, Brushes.Black, LineThickness);
         
+        A = ScalePoint(A, scaleMatrix);
+        L = ScalePoint(L, scaleMatrix);
+        G = ScalePoint(G, scaleMatrix);
+        F = ScalePoint(F, scaleMatrix);
+        E = ScalePoint(E, scaleMatrix);
+        H = ScalePoint(H, scaleMatrix);
+        D = ScalePoint(D, scaleMatrix);
+        I = ScalePoint(I, scaleMatrix);
+        C = ScalePoint(C, scaleMatrix);
+        J = ScalePoint(J, scaleMatrix);
+        B = ScalePoint(B, scaleMatrix);
+        K = ScalePoint(K, scaleMatrix);
         
-        
-        
-        
+        if (ReflectionCheckBox.IsChecked == true)
+        {
+            A = ReflectPoint(A, reflectMatrix);
+            L = ReflectPoint(L, reflectMatrix);
+            G = ReflectPoint(G, reflectMatrix);
+            F = ReflectPoint(F, reflectMatrix);
+            E = ReflectPoint(E, reflectMatrix);
+            H = ReflectPoint(H, reflectMatrix);
+            D = ReflectPoint(D, reflectMatrix);
+            I = ReflectPoint(I, reflectMatrix);
+            C = ReflectPoint(C, reflectMatrix);
+            J = ReflectPoint(J, reflectMatrix);
+            B = ReflectPoint(B, reflectMatrix);
+            K = ReflectPoint(K, reflectMatrix);
+        }
+
+        if (AffineCheckBox.IsChecked == true || (AffineCheckBox.IsChecked == false && ProjectiveCheckBox.IsChecked == false))
+        {
+            A = AffineTransformation(A, matrixAffine);
+            L = AffineTransformation(L, matrixAffine);
+            G = AffineTransformation(G, matrixAffine);
+            F = AffineTransformation(F, matrixAffine);
+            E = AffineTransformation(E, matrixAffine);
+            H = AffineTransformation(H, matrixAffine);
+            D = AffineTransformation(D, matrixAffine);
+            I = AffineTransformation(I, matrixAffine);
+            C = AffineTransformation(C, matrixAffine);
+            J = AffineTransformation(J, matrixAffine);
+            B = AffineTransformation(B, matrixAffine);
+            K = AffineTransformation(K, matrixAffine);
+        }
+        else
+        {
+            A = ProjectiveTransformation(A, matrixProjective);
+            L = ProjectiveTransformation(L, matrixProjective);
+            G = ProjectiveTransformation(G, matrixProjective);
+            F = ProjectiveTransformation(F, matrixProjective);
+            E = ProjectiveTransformation(E, matrixProjective);
+            H = ProjectiveTransformation(H, matrixProjective);
+            D = ProjectiveTransformation(D, matrixProjective);
+            I = ProjectiveTransformation(I, matrixProjective);
+            C = ProjectiveTransformation(C, matrixProjective);
+            J = ProjectiveTransformation(J, matrixProjective);
+            B = ProjectiveTransformation(B, matrixProjective);
+            K = ProjectiveTransformation(K, matrixProjective);
+        }
+
         DrawRotatedArc(smallArc, rotationAngle, smallArc.Radius, matrixAffine, matrixProjective, scaleMatrix);
         DrawRotatedArc(largeArc, rotationAngle, largeArc.Radius, matrixAffine, matrixProjective, scaleMatrix);
        
@@ -170,8 +247,6 @@ public partial class MainWindow : Window
        
         DrawLine(Px(K.X), Px(K.Y), Px(L.X), Px(L.Y) , Brushes.Black, LineThickness);
         DrawLine(Px(B.X), Px(B.Y), Px(A.X), Px(A.Y) , Brushes.Black, LineThickness);
-        
-        
         
         GetData();
     }
@@ -197,28 +272,23 @@ public partial class MainWindow : Window
 
     private void ApplyRotation_Click(object sender, RoutedEventArgs e)
     {
-// Отримуємо кут обертання з поля вводу 
         double.TryParse(RotationAngleInput.Text, out rotationAngle);
         double.TryParse(RotationXInput.Text, out rotationX);
         double.TryParse(RotationYInput.Text, out rotationY);
-// Оновлюємо фігури після зміни кута обертання 
         DrawCoordinateSystem();
         DrawShape();
     }
 
     private void ApplyLocation_Click(object sender, RoutedEventArgs e)
     {
-// Отримуємо кут обертання з поля вводу 
         double.TryParse(LocationXInput.Text, out locationX);
         double.TryParse(LocationYInput.Text, out locationY);
-// Оновлюємо фігури після зміни кута обертання 
         DrawCoordinateSystem();
         DrawShape();
     }
 
     private void ApplySettingsPxPerCm_Click(object sender, RoutedEventArgs e)
     {
-// Отримуємо значення з полів вводу і перетворюємо їх у відповідні типи 
         double.TryParse(PxPerCmInput.Text, out _pxPerCm);
         DrawCoordinateSystem();
         DrawShape();
@@ -226,7 +296,6 @@ public partial class MainWindow : Window
 
     private void ApplyAffineTransformation_Click(object sender, RoutedEventArgs e)
     {
-// Отримуємо значення з полів вводу і перетворюємо їх у відповідні типи 
         double.TryParse(xXInput.Text, out xX);
         double.TryParse(yXInput.Text, out yX);
         double.TryParse(xYInput.Text, out xY);
@@ -239,7 +308,6 @@ public partial class MainWindow : Window
 
     private void ApplyProjectiveTransformation_Click(object sender, RoutedEventArgs e)
     {
-// Отримуємо значення з полів вводу і перетворюємо їх у відповідні типи 
         double.TryParse(xXwInput.Text, out xXw);
         double.TryParse(yXwInput.Text, out yXw);
         double.TryParse(xYwInput.Text, out xYw);
@@ -255,8 +323,8 @@ public partial class MainWindow : Window
     
     private void ApplyReflection_Click(object sender, RoutedEventArgs e)
     {
-        double.TryParse(ReflectionXInput.Text, out RefX);
-        double.TryParse(ReflectionYInput.Text, out RefY);
+        double.TryParse(ReflectionXInput.Text, out X);
+        double.TryParse(ReflectionYInput.Text, out Y);
         
         DrawCoordinateSystem();
         DrawShape();
@@ -264,8 +332,6 @@ public partial class MainWindow : Window
     
     private void ApplyScaling_Click(object sender, RoutedEventArgs e)
     {
-// Отримуємо значення з полів вводу і перетворюємо їх у відповідні типи 
-        
         double.TryParse(SxInput.Text, out Sx);
         double.TryParse(SyInput.Text, out Sy);
         
@@ -282,7 +348,7 @@ public partial class MainWindow : Window
 
     private void DrawingCanvas_MouseMove(object sender, MouseEventArgs e)
     {
-        Point mousePosition = e.GetPosition(DrawingCanvas);
+        System.Windows.Point mousePosition = e.GetPosition(DrawingCanvas);
         double xCoord = mousePosition.X ;
         double yCoord = mousePosition.Y;
         double xCoordCm = xCoord / _pxPerCm;
@@ -293,19 +359,16 @@ public partial class MainWindow : Window
 // Метод для малювання лінії на Canvas 
     private void DrawLine(double x1, double y1, double x2, double y2, Brush color, double thickness)
     {
-// Використовуємо новий конструктор для створення лінії 
         var customLine = new Line(x1, y1, x2, y2, color);
-// Створюємо WPF-лінію 
         var wpfLine = new System.Windows.Shapes.Line()
         {
-            X1 = customLine.StartDot.X,
-            Y1 = customLine.StartDot.Y,
-            X2 = customLine.EndDot.X,
-            Y2 = customLine.EndDot.Y,
+            X1 = customLine.StartPoint.X,
+            Y1 = customLine.StartPoint.Y,
+            X2 = customLine.EndPoint.X,
+            Y2 = customLine.EndPoint.Y,
             Stroke = color,
             StrokeThickness = thickness
         };
-// Додаємо лінію до Canvas 
         DrawingCanvas.Children.Add(wpfLine);
     }
 
@@ -386,25 +449,25 @@ public partial class MainWindow : Window
             }
         }
 
-        DrawDot(Px(x0), Px(y0), Px(2) / _pxPerCm, Brushes.Black, AxisThickness);
-        DrawDot(Px(xX + x0), Px(yX + y0), Px(2 / _pxPerCm), Brushes.LimeGreen, AxisThickness);
-        DrawDot(Px(xY + x0), Px(yY + y0), Px(2 / _pxPerCm), Brushes.Red, AxisThickness);
+        DrawPoint(Px(x0), Px(y0), Px(2) / _pxPerCm, Brushes.Black, AxisThickness);
+        DrawPoint(Px(xX + x0), Px(yX + y0), Px(2 / _pxPerCm), Brushes.LimeGreen, AxisThickness);
+        DrawPoint(Px(xY + x0), Px(yY + y0), Px(2 / _pxPerCm), Brushes.Red, AxisThickness);
     }
 
     private void DrawProjectiveLine(double[][] matrixProjective, double x1, double y1, double x2,
         double y2, Brush color, double thickness)
     {
 // Перетворюємо точки лінії за допомогою проективної матриці 
-        var p1 = ProjectiveTransformation(new Dot(x1, y1), matrixProjective);
-        var p2 = ProjectiveTransformation(new Dot(x2, y2), matrixProjective);
+        var p1 = ProjectiveTransformation(new Point(x1, y1), matrixProjective);
+        var p2 = ProjectiveTransformation(new Point(x2, y2), matrixProjective);
         var customLine = new Line(p1.X, p1.Y, p2.X, p2.Y, color);
 // Створюємо WPF-лінію 
         var wpfLine = new System.Windows.Shapes.Line()
         {
-            X1 = customLine.StartDot.X,
-            Y1 = customLine.StartDot.Y,
-            X2 = customLine.EndDot.X,
-            Y2 = customLine.EndDot.Y,
+            X1 = customLine.StartPoint.X,
+            Y1 = customLine.StartPoint.Y,
+            X2 = customLine.EndPoint.X,
+            Y2 = customLine.EndPoint.Y,
             Stroke = color,
             StrokeThickness = thickness
         };
@@ -415,23 +478,44 @@ public partial class MainWindow : Window
     private void DrawArc(double x, double y, double radius, double startAngle, double endAngle, Brush color,
         double thickness, double[][] matrixAffine, double[][] matrixProjective, double[][] matrixScale)
     {
-        Arc arc = new Arc(startAngle, endAngle, new Dot(x, y), radius);
+        Arc arc = new Arc(startAngle, endAngle, new Point(x, y), radius);
         for (double i = startAngle; i <= endAngle;  i += 0.5)
         {
             double rad1 = degToRad(i);
             double rad2 = degToRad(i + 1);
-            Dot Pbeg = new Dot(
-                arc.Center.X + arc.Radius * Math.Cos(rad1),
-                arc.Center.Y - arc.Radius * Math.Sin(rad1)
-            );
-            Dot Pend = new Dot(
-                arc.Center.X + arc.Radius * Math.Cos(rad2),
-                arc.Center.Y - arc.Radius * Math.Sin(rad2)
-            );
+
+            Point Pbeg;
+            Point Pend;
+            
+            if (ReflectionCheckBox.IsChecked == true)
+            {
+                Pbeg = new Point(
+                    arc.Center.X + arc.Radius * -Math.Cos(rad1),
+                    arc.Center.Y - arc.Radius * -Math.Sin(rad1)
+                );
+                 Pend = new Point(
+                    arc.Center.X + arc.Radius * -Math.Cos(rad2),
+                    arc.Center.Y - arc.Radius * -Math.Sin(rad2)
+                );
+            }
+            else
+            {
+                 Pbeg = new Point(
+                    arc.Center.X + arc.Radius * Math.Cos(rad1),
+                    arc.Center.Y - arc.Radius * Math.Sin(rad1)
+                );
+                 Pend = new Point(
+                    arc.Center.X + arc.Radius * Math.Cos(rad2),
+                    arc.Center.Y - arc.Radius * Math.Sin(rad2)
+                );
+            }
+            
 
             Pbeg = ScalePoint(Pbeg, matrixScale);
             Pend = ScalePoint(Pend, matrixScale);
             
+          
+
             if (AffineCheckBox.IsChecked == true)
             {
                 Pbeg = AffineTransformation(Pbeg, matrixAffine);
@@ -443,22 +527,29 @@ public partial class MainWindow : Window
                 Pend = ProjectiveTransformation(Pend, matrixProjective);
             }
 
+            Console.WriteLine(Pbeg.X/_pxPerCm);
+            Console.WriteLine(Pbeg.Y/_pxPerCm);
+            Console.WriteLine(Pend.X/_pxPerCm);
+            Console.WriteLine(Pend.Y/_pxPerCm);
+
+            
             DrawLine(Pbeg.X, Pbeg.Y, Pend.X, Pend.Y, color, thickness);
+            
         }
     }
 
-    private void DrawDot(double x, double y, double radius, Brush color, double thickness)
+    private void DrawPoint(double x, double y, double radius, Brush color, double thickness)
     {
-        Circle circle = new Circle(new Dot(x, y), radius);
+        Circle circle = new Circle(new Point(x, y), radius);
         for (int i = 0; i < 360; ++i)
         {
             double rad1 = degToRad(i);
             double rad2 = degToRad(i + 1);
-            Dot Pbeg = new Dot(
+            Point Pbeg = new Point(
                 circle.Center.X + radius * Math.Cos(rad1),
                 circle.Center.Y + radius * Math.Sin(rad1)
             );
-            Dot Pend = new Dot(
+            Point Pend = new Point(
                 circle.Center.X + radius * Math.Cos(rad2),
                 circle.Center.Y - radius * Math.Sin(rad2)
             );
@@ -471,25 +562,24 @@ public partial class MainWindow : Window
         return degrees * (Math.PI / 180);
     }
 
-    private Dot AffineTransformation(Dot point, double[][] transformationMatrix)
+    private Point AffineTransformation(Point point, double[][] transformationMatrix)
     {
         double newX = transformationMatrix[0][0] * point.X + transformationMatrix[1][0] * point.Y +
                       transformationMatrix[2][0] * Px(1);
         double newY = transformationMatrix[0][1] * point.X + transformationMatrix[1][1] * point.Y +
                       transformationMatrix[2][1] * Px(1);
-        return new Dot(newX, newY);
+        return new Point(newX, newY);
     }
 
-    public Dot ProjectiveTransformation(Dot point, double[][] matrixProjective)
+    public Point ProjectiveTransformation(Point point, double[][] matrixProjective)
     {
-// Розрахунок значень X', Y', W' 
         double XPrime = matrixProjective[0][0] * point.X + matrixProjective[1][0] * point.Y + matrixProjective[2][0];
         double YPrime = matrixProjective[0][1] * point.X + matrixProjective[1][1] * point.Y + matrixProjective[2][1];
         double WPrime = matrixProjective[0][2] * point.X + matrixProjective[1][2] * point.Y + matrixProjective[2][2];
-// Отримуємо нові координати Xresult та Yresult 
+
         double XResult = XPrime / WPrime;
         double YResult = YPrime / WPrime;
-        return new Dot(XResult, YResult);
+        return new Point(XResult, YResult);
     }
 
    
@@ -533,22 +623,19 @@ public partial class MainWindow : Window
         w0Input.Text = w0.ToString();
         SxInput.Text = Sx.ToString();
         SyInput.Text = Sy.ToString();
-        ReflectionXInput.Text = RefX.ToString();
-        ReflectionYInput.Text = RefY.ToString();
+        ReflectionXInput.Text = X.ToString();
+        ReflectionYInput.Text = Y.ToString();
     }
 
     private void DrawRotatedArc(Arc arc, double rotationAngle, double radius, double[][] matrixAffine,
         double[][] matrixProjective, double [][] scaleMatrix)
     {
-// Оновлюємо кути дуги 
         double adjustedStartAngle = (arc.StartAngle + rotationAngle) % 360;
         double adjustedEndAngle = (arc.EndAngle + rotationAngle) % 360;
         if (adjustedStartAngle < 0) adjustedStartAngle += 360;
         if (adjustedEndAngle < 0) adjustedEndAngle += 360;
-// Перевіряємо, чи дуга перетинає межу 360 градусів 
         if (adjustedEndAngle < adjustedStartAngle)
         {
-// Малюємо дві частини дуги: від стартового кута до 360 і від 0 до кінцевого кута 
             DrawArc(Px(arc.Center.X), Px(arc.Center.Y), Px(radius), adjustedStartAngle, 360,
                 Brushes.Black, LineThickness, matrixAffine, matrixProjective, scaleMatrix);
             DrawArc(Px(arc.Center.X), Px(arc.Center.Y), Px(radius), 0, adjustedEndAngle,
@@ -556,60 +643,54 @@ public partial class MainWindow : Window
         }
         else
         {
-// Малюємо дугу в межах стартового та кінцевого кута 
             DrawArc(Px(arc.Center.X), Px(arc.Center.Y), Px(radius), adjustedStartAngle,
                 adjustedEndAngle, Brushes.Black, LineThickness, matrixAffine, matrixProjective, scaleMatrix);
         }
     }
 
-    private void UpdateLineCoordinates(Dot startPoint, Dot endPoint, Brush color)
+    private void UpdateLineCoordinates(Point startPoint, Point endPoint, Brush color)
     {
         if (!startPoint.Equals(endPoint))
             DrawLine(startPoint.X, startPoint.Y, endPoint.X, endPoint.Y, color, LineThickness);
     }
 
-    private Dot pointEuclidRotation(Dot point, Dot center, double angle)
+    private Point pointEuclidRotation(Point point, Point center, double angle)
     {
         double angleInRadians = -angle * Math.PI / 180;
         double cosA = Math.Cos(angleInRadians);
         double sinA = Math.Sin(angleInRadians);
         double newX = center.X + (point.X - center.X) * cosA - (point.Y - center.Y) * sinA;
         double newY = center.Y + (point.X - center.X) * sinA + (point.Y - center.Y) * cosA;
-        return new Dot(newX, newY);
+        return new Point(newX, newY);
     }
 
-    private Dot ReflectPoint(Dot point, double[][] reflectMatrix)
+    private Point ReflectPoint(Point point, double[][] reflectMatrix)
     {
         
-        double  newX = 2*RefX - point.X;
-        double  newY = 2*RefY - point.Y;
-        /*
-        double newX = reflectMatrix[0][0] * point.X + reflectMatrix[1][0] * point.Y +
-                      reflectMatrix[2][0];
-        double newY = reflectMatrix[0][1] * point.X + reflectMatrix[1][1] * point.Y +
-                      reflectMatrix[2][1];
-        */
-        return new Dot(newX, newY);
+        double  newX = 2*X - point.X;
+        double  newY = 2*Y - point.Y;
+        
+        return new Point(newX, newY);
     }
 
-    private Dot ScalePoint(Dot point, double[][] scaleMatrix)
+    private Point ScalePoint(Point point, double[][] scaleMatrix)
     {
         double newX = scaleMatrix[0][0] * point.X + scaleMatrix[1][0] * point.Y +
                       scaleMatrix[2][0];
         double newY = scaleMatrix[0][1] * point.X + scaleMatrix[1][1] * point.Y +
                       scaleMatrix[2][1];
         
-        return new Dot(newX, newY);
+        return new Point(newX, newY);
     }
 
-    private (Dot startPoint, Dot endPoint) GetArcEndPoints(Dot center, double radius, double startAngle,
+    private (Point startPoint, Point endPoint) GetArcEndPoints(Point center, double radius, double startAngle,
         double endAngle)
     {
         double x1 = Px(center.X) + Px(radius) * Math.Cos(startAngle * Math.PI / 180);
         double y1 = Px(center.Y) + Px(radius) * Math.Sin(startAngle * Math.PI / 180);
         double x2 = Px(center.X) + Px(radius) * Math.Cos(endAngle * Math.PI / 180);
         double y2 = Px(center.Y) + Px(radius) * Math.Sin(endAngle * Math.PI / 180);
-        return (new Dot(x1, y1), new Dot(x2, y2));
+        return (new Point(x1, y1), new Point(x2, y2));
     }
 
     private static double Px(double coord)
@@ -646,6 +727,11 @@ public partial class MainWindow : Window
         {
             ProjectiveCheckBox.IsChecked = true; // Не позволять оба чекбокса быть выключенными 
         }
+    }
+
+    private void ApplyClearCanvas_Click(object sender, RoutedEventArgs e)
+    {
+        DrawingCanvas.Children.Clear();
     }
 }
 

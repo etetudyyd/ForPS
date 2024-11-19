@@ -4,9 +4,9 @@ namespace GMaGD.Models;
 
 public class Arc : Circle
 {
-    public Dot StartDot { get; set; }
+    public Point StartPoint { get; set; }
     
-    public Dot EndDot { get; set; }
+    public Point EndPoint { get; set; }
     
     public double StartAngle { get; set; }
     
@@ -14,7 +14,7 @@ public class Arc : Circle
     
     
 
-    public Arc(double startAngle, double endAngle, Dot center, double radius) : base(center, radius)
+    public Arc(double startAngle, double endAngle, Point center, double radius) : base(center, radius)
     {
         StartAngle = startAngle;
         EndAngle = endAngle;

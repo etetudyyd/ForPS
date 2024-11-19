@@ -11,13 +11,13 @@ public class Line
     public double Y2 { get; set; }
     public Brush Stroke { get; set; }
     public double StrokeThickness { get; set; } = 1;
-    public Dot StartDot { get; set; }
-    public Dot EndDot { get; set; }
+    public Point StartPoint { get; set; }
+    public Point EndPoint { get; set; }
 
-    public Line(Dot startDot, Dot endDot, Brush stroke, double thickness)
+    public Line(Point startPoint, Point endPoint, Brush stroke, double thickness)
     {
-        StartDot = startDot;
-        EndDot = endDot;
+        StartPoint = startPoint;
+        EndPoint = endPoint;
         Stroke = stroke;
         StrokeThickness = thickness;
     }
@@ -25,8 +25,8 @@ public class Line
     public Line(double x1, double y1, double x2, double y2, Brush stroke)
     {
         Stroke = stroke;
-        StartDot = new Dot(x1, y1);
-        EndDot = new Dot(x2, y2);
+        StartPoint = new Point(x1, y1);
+        EndPoint = new Point(x2, y2);
     }
     
     public void Draw(Canvas canvas)
@@ -34,10 +34,10 @@ public class Line
         // Створюємо лінію з параметрами
         var line = new System.Windows.Shapes.Line
         {
-            X1 = StartDot.X, // Використовуємо координати точок
-            Y1 = StartDot.Y,
-            X2 = EndDot.X,
-            Y2 = EndDot.Y,
+            X1 = StartPoint.X, // Використовуємо координати точок
+            Y1 = StartPoint.Y,
+            X2 = EndPoint.X,
+            Y2 = EndPoint.Y,
             Stroke = this.Stroke,
             StrokeThickness = this.StrokeThickness
         };
