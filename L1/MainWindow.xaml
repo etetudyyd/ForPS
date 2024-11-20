@@ -180,6 +180,12 @@
                         <TextBox x:Name="ReflectionYInput" Width="50" Text="250" Margin="5" />
                         <Button   Margin="5" Content="Locate" Width="90" Click="ApplyReflection_Click" />
                     </WrapPanel>
+                    <WrapPanel>
+                        <TextBlock Margin="5">dX</TextBlock>
+                        <TextBox x:Name="ReflectiondXInput" Width="50" Text="150" Margin="5" />    
+                        <TextBlock Margin="5">dY</TextBlock>
+                        <TextBox x:Name="ReflectiondYInput" Width="50" Text="250" Margin="5" />
+                    </WrapPanel>
                 </StackPanel>
                 
                 <StackPanel Margin="10,5">
@@ -189,8 +195,8 @@
                         <TextBox x:Name="SxInput" Width="50" Text="150" Margin="5" />    
                         <TextBlock Margin="5">Sy</TextBlock>
                         <TextBox x:Name="SyInput" Width="50" Text="250" Margin="5" />
-                        <Button   Margin="5" Content="Apply" Width="90" Click="ApplyScaling_Click" />
                     </WrapPanel>
+                    <Button   Margin="5" Content="Apply" Width="90" Click="ApplyScaling_Click" />
                 </StackPanel>
                 
 

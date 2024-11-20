@@ -61,6 +61,9 @@ public partial class MainWindow : Window
     private double Ij = 10;
     private double Jk = 15;
     private double Kl = 15;
+
+    private double dX;
+    private double dY;
     
     public MainWindow()
     {
@@ -69,7 +72,7 @@ public partial class MainWindow : Window
     
     private void DrawShape()
     {
-        double[][] scaleMatrix =
+         double[][] scaleMatrix =
         [
             [Sx,  0, 0],
             [ 0, Sy, 0],
@@ -78,8 +81,8 @@ public partial class MainWindow : Window
      
         double[][] reflectMatrix =
         [
-            [1, 0, 0],
-            [0, 1, 0],
+            [-1, 0, 0],
+            [0, -1, 0],
             [2*X, 2*Y, 1]
         ];
         
@@ -96,47 +99,33 @@ public partial class MainWindow : Window
             [x0w * w0, y0w * w0, w0]
         ];
         
-        Point center = new Point(locationX, locationY);
-        Point initCenter = center;
+        
+        
+         Point center = new Point(locationX + x0, locationY + y0);
         Point rotateCenter = new Point(rotationX, rotationY);
-        Arc smallArc = new Arc(90, 270, initCenter, _smallArcRadius);
-        Arc largeArc = new Arc(134.5, 224.5, initCenter, _largeArcRadius);
         
-        if (AffineCheckBox.IsChecked == true)
-        {
-            center = AffineTransformation(center, matrixAffine);
-        }
-        else if(ProjectiveCheckBox.IsChecked == true)
-        {
-            _pxPerCm = 1;
-            center = ProjectiveTransformation(center, matrixProjective);
-        }
-
-        
-        if (AffineCheckBox.IsChecked == true)
-        {
-            rotateCenter = AffineTransformation(rotateCenter, matrixAffine);
-        }
-        else if(ProjectiveCheckBox.IsChecked == true)
-        {
-            rotateCenter = ProjectiveTransformation(rotateCenter, matrixProjective);
-        }
        
        
-        
         DrawPoint(Px(rotateCenter.X), Px(rotateCenter.Y), _pxPerCm/3, Brushes.Blue, LineThickness);
         
-        
-        var fgDots = GetArcEndPoints(smallArc.Center, smallArc.Radius, smallArc.StartAngle, smallArc.EndAngle);
-        var laDots = GetArcEndPoints(largeArc.Center, largeArc.Radius, largeArc.StartAngle, largeArc.EndAngle + 1);
-        
-        DrawPoint(center.X, center.Y, 1/_pxPerCm, Brushes.Black, LineThickness);
+        center = pointEuclidRotation(center, rotateCenter, rotationAngle);
 
         
+        
+        Arc smallArc = new Arc(90, 270, center, _smallArcRadius);
+        Arc largeArc = new Arc(134.5, 224.5, center, _largeArcRadius);
+        
+        
+        DrawPoint(Px(center.X), Px(center.Y), _pxPerCm/3, Brushes.Black, LineThickness);
+        
+        var fgDots = GetArcEndPoints(smallArc.Center, smallArc.Radius, smallArc.StartAngle, smallArc.EndAngle);
+        var laDots = GetArcEndPoints(largeArc.Center, largeArc.Radius, largeArc.StartAngle, largeArc.EndAngle+1);
+
         Point A = new Point(Cm(laDots.startPoint.X), Cm(laDots.startPoint.Y));
         Point L = new Point(Cm(laDots.endPoint.X), Cm(laDots.endPoint.Y));
         Point G = new Point(Cm(fgDots.endPoint.X), Cm(fgDots.endPoint.Y));
-        Point F = new Point(Cm(fgDots.startPoint.X), Cm(fgDots.startPoint.Y));
+        Point F = new Point(Cm(fgDots.startPoint.X),Cm(fgDots.startPoint.Y));
+        
         Point E = new Point(F.X + (Ef), F.Y);
         Point H = new Point(G.X + (Gh), G.Y);
         Point D = new Point(E.X, E.Y - (De));
@@ -146,42 +135,32 @@ public partial class MainWindow : Window
         Point B = new Point(C.X  + Ab - 15, C.Y + (Bc));
         Point K = new Point(J.X + Kl - 15, J.Y - (Jk));
         
-        A = pointEuclidRotation(A, rotateCenter, rotationAngle);
-        L = pointEuclidRotation(L, rotateCenter, rotationAngle);
-        G = pointEuclidRotation(G, rotateCenter, rotationAngle);
-        F = pointEuclidRotation(F, rotateCenter, rotationAngle);
-        E = pointEuclidRotation(E, rotateCenter, rotationAngle);
-        H = pointEuclidRotation(H, rotateCenter, rotationAngle);
-        D = pointEuclidRotation(D, rotateCenter, rotationAngle);
-        I = pointEuclidRotation(I, rotateCenter, rotationAngle);
-        C = pointEuclidRotation(C, rotateCenter, rotationAngle);
-        J = pointEuclidRotation(J, rotateCenter, rotationAngle);
-        B = pointEuclidRotation(B, rotateCenter, rotationAngle);
-        K = pointEuclidRotation(K, rotateCenter, rotationAngle);
+        A = pointEuclidRotation(A, center, rotationAngle);
+        L = pointEuclidRotation(L, center, rotationAngle);
+        G = pointEuclidRotation(G, center, rotationAngle);
+        F = pointEuclidRotation(F, center, rotationAngle);
         
-        center = pointEuclidRotation(center, rotateCenter, rotationAngle);
-
+        E = pointEuclidRotation(E, center, rotationAngle);
+        H = pointEuclidRotation(H, center, rotationAngle);
+        
+        D = pointEuclidRotation(D, center, rotationAngle);
+        I = pointEuclidRotation(I, center, rotationAngle);
+        C = pointEuclidRotation(C, center, rotationAngle);
+        J = pointEuclidRotation(J, center, rotationAngle);
+        B = pointEuclidRotation(B, center, rotationAngle);
+        K = pointEuclidRotation(K, center, rotationAngle);
+       
+        
         if (ReflectionCheckBox.IsChecked == true)
         {
             center = ReflectPoint(center, reflectMatrix);
-            smallArc.Center = center;
-            largeArc.Center = center;
         }
         
-        DrawPoint(Px(center.X), Px(center.Y), _pxPerCm/3, Brushes.Black, LineThickness);
+        smallArc.Center = center;
+         largeArc.Center = center;
         
-        A = ScalePoint(A, scaleMatrix);
-        L = ScalePoint(L, scaleMatrix);
-        G = ScalePoint(G, scaleMatrix);
-        F = ScalePoint(F, scaleMatrix);
-        E = ScalePoint(E, scaleMatrix);
-        H = ScalePoint(H, scaleMatrix);
-        D = ScalePoint(D, scaleMatrix);
-        I = ScalePoint(I, scaleMatrix);
-        C = ScalePoint(C, scaleMatrix);
-        J = ScalePoint(J, scaleMatrix);
-        B = ScalePoint(B, scaleMatrix);
-        K = ScalePoint(K, scaleMatrix);
+        DrawRotatedArc(smallArc, rotationAngle, smallArc.Radius, matrixAffine, matrixProjective, scaleMatrix);
+        DrawRotatedArc(largeArc, rotationAngle, largeArc.Radius, matrixAffine, matrixProjective, scaleMatrix);
         
         if (ReflectionCheckBox.IsChecked == true)
         {
@@ -198,58 +177,75 @@ public partial class MainWindow : Window
             B = ReflectPoint(B, reflectMatrix);
             K = ReflectPoint(K, reflectMatrix);
         }
-
+        
+        DrawPoint(Px(center.X), Px(center.Y), _pxPerCm/3, Brushes.Black, LineThickness);
+        
+        
         if (AffineCheckBox.IsChecked == true || (AffineCheckBox.IsChecked == false && ProjectiveCheckBox.IsChecked == false))
         {
-            A = AffineTransformation(A, matrixAffine);
-            L = AffineTransformation(L, matrixAffine);
-            G = AffineTransformation(G, matrixAffine);
-            F = AffineTransformation(F, matrixAffine);
-            E = AffineTransformation(E, matrixAffine);
-            H = AffineTransformation(H, matrixAffine);
-            D = AffineTransformation(D, matrixAffine);
-            I = AffineTransformation(I, matrixAffine);
-            C = AffineTransformation(C, matrixAffine);
-            J = AffineTransformation(J, matrixAffine);
-            B = AffineTransformation(B, matrixAffine);
-            K = AffineTransformation(K, matrixAffine);
+            A = AffineTransformation(new Point(Px(A.X), Px(A.Y)), matrixAffine);
+            L = AffineTransformation(new Point(Px(L.X), Px(L.Y)), matrixAffine);
+            G = AffineTransformation(new Point(Px(G.X), Px(G.Y)), matrixAffine);
+            F = AffineTransformation(new Point(Px(F.X), Px(F.Y)), matrixAffine);
+            E = AffineTransformation(new Point(Px(E.X), Px(E.Y)), matrixAffine);
+            H = AffineTransformation(new Point(Px(H.X), Px(H.Y)), matrixAffine);
+            D = AffineTransformation(new Point(Px(D.X), Px(D.Y)), matrixAffine);
+            I = AffineTransformation(new Point(Px(I.X), Px(I.Y)), matrixAffine);
+            C = AffineTransformation(new Point(Px(C.X), Px(C.Y)), matrixAffine);
+            J = AffineTransformation(new Point(Px(J.X), Px(J.Y)), matrixAffine);
+            B = AffineTransformation(new Point(Px(B.X), Px(B.Y)), matrixAffine);
+            K = AffineTransformation(new Point(Px(K.X), Px(K.Y)), matrixAffine);
         }
         else
         {
-            A = ProjectiveTransformation(A, matrixProjective);
-            L = ProjectiveTransformation(L, matrixProjective);
-            G = ProjectiveTransformation(G, matrixProjective);
-            F = ProjectiveTransformation(F, matrixProjective);
-            E = ProjectiveTransformation(E, matrixProjective);
-            H = ProjectiveTransformation(H, matrixProjective);
-            D = ProjectiveTransformation(D, matrixProjective);
-            I = ProjectiveTransformation(I, matrixProjective);
-            C = ProjectiveTransformation(C, matrixProjective);
-            J = ProjectiveTransformation(J, matrixProjective);
-            B = ProjectiveTransformation(B, matrixProjective);
-            K = ProjectiveTransformation(K, matrixProjective);
+            A = ProjectiveTransformation(new Point(Px(A.X), Px(A.Y)), matrixProjective);
+            L = ProjectiveTransformation(new Point(Px(L.X), Px(L.Y)), matrixProjective);
+            G = ProjectiveTransformation(new Point(Px(G.X), Px(G.Y)), matrixProjective);
+            F = ProjectiveTransformation(new Point(Px(F.X), Px(F.Y)), matrixProjective);
+            E = ProjectiveTransformation(new Point(Px(E.X), Px(E.Y)), matrixProjective);
+            H = ProjectiveTransformation(new Point(Px(H.X), Px(H.Y)), matrixProjective);
+            D = ProjectiveTransformation(new Point(Px(D.X), Px(D.Y)), matrixProjective);
+            I = ProjectiveTransformation(new Point(Px(I.X), Px(I.Y)), matrixProjective);
+            C = ProjectiveTransformation(new Point(Px(C.X), Px(C.Y)), matrixProjective);
+            J = ProjectiveTransformation(new Point(Px(J.X), Px(J.Y)), matrixProjective);
+            B = ProjectiveTransformation(new Point(Px(B.X), Px(B.Y)), matrixProjective);
+            K = ProjectiveTransformation(new Point(Px(K.X), Px(K.Y)), matrixProjective);
         }
-
-        DrawRotatedArc(smallArc, rotationAngle, smallArc.Radius, matrixAffine, matrixProjective, scaleMatrix);
-        DrawRotatedArc(largeArc, rotationAngle, largeArc.Radius, matrixAffine, matrixProjective, scaleMatrix);
+      
+        A = ScalePoint(A, scaleMatrix);
+        L = ScalePoint(L, scaleMatrix);
+        G = ScalePoint(G, scaleMatrix);
+        F = ScalePoint(F, scaleMatrix);
+        E = ScalePoint(E, scaleMatrix);
+        H = ScalePoint(H, scaleMatrix);
+        D = ScalePoint(D, scaleMatrix);
+        I = ScalePoint(I, scaleMatrix);
+        C = ScalePoint(C, scaleMatrix);
+        J = ScalePoint(J, scaleMatrix);
+        B = ScalePoint(B, scaleMatrix);
+        K = ScalePoint(K, scaleMatrix);
+        
+        
+        DrawLine((C.X), (C.Y), (B.X), (B.Y),Brushes.Black, LineThickness);
+        DrawLine((J.X), (J.Y), (K.X), (K.Y),Brushes.Black, LineThickness);
+        
+        DrawLine((D.X), (D.Y), (E.X), (E.Y), Brushes.Black, LineThickness);
+        DrawLine((I.X), (I.Y), (H.X), (H.Y), Brushes.Black, LineThickness);
+        
+        DrawLine((D.X), (D.Y), (C.X), (C.Y), Brushes.Black, LineThickness);
+        DrawLine((I.X), (I.Y), (J.X), (J.Y), Brushes.Black, LineThickness);
+        
+        DrawLine((F.X), (F.Y), (E.X), (E.Y), Brushes.Black, LineThickness);
+        DrawLine((G.X), (G.Y), (H.X), (H.Y), Brushes.Black, LineThickness);
        
-        DrawLine(Px(C.X), Px(C.Y), Px(B.X), Px(B.Y),Brushes.Black, LineThickness);
-        DrawLine(Px(J.X), Px(J.Y), Px(K.X), Px(K.Y),Brushes.Black, LineThickness);
+        DrawLine((K.X), (K.Y), (L.X), (L.Y) , Brushes.Black, LineThickness);
+        DrawLine((B.X), (B.Y), (A.X), (A.Y) , Brushes.Black, LineThickness);
         
-        DrawLine(Px(F.X), Px(F.Y), Px(E.X), Px(E.Y), Brushes.Black, LineThickness);
-        DrawLine(Px(G.X), Px(G.Y), Px(H.X), Px(H.Y), Brushes.Black, LineThickness);
-        
-        DrawLine(Px(D.X), Px(D.Y), Px(E.X), Px(E.Y), Brushes.Black, LineThickness);
-        DrawLine(Px(I.X), Px(I.Y), Px(H.X), Px(H.Y), Brushes.Black, LineThickness);
-        
-        DrawLine(Px(D.X), Px(D.Y), Px(C.X), Px(C.Y), Brushes.Black, LineThickness);
-        DrawLine(Px(I.X), Px(I.Y), Px(J.X), Px(J.Y), Brushes.Black, LineThickness);
        
-        DrawLine(Px(K.X), Px(K.Y), Px(L.X), Px(L.Y) , Brushes.Black, LineThickness);
-        DrawLine(Px(B.X), Px(B.Y), Px(A.X), Px(A.Y) , Brushes.Black, LineThickness);
-        
         GetData();
     }
+    
+
 
     private void ApplySettings_Click(object sender, RoutedEventArgs e)
     {
@@ -325,6 +321,8 @@ public partial class MainWindow : Window
     {
         double.TryParse(ReflectionXInput.Text, out X);
         double.TryParse(ReflectionYInput.Text, out Y);
+        double.TryParse(ReflectiondXInput.Text, out double dX);
+        double.TryParse(ReflectiondYInput.Text, out double dY);
         
         DrawCoordinateSystem();
         DrawShape();
@@ -390,39 +388,38 @@ public partial class MainWindow : Window
             [x0w * w0, y0w * w0, w0]
         ];
         
+        double[][] matrixAffine =
+        [
+            [xX, yX, 0],
+            [xY, yY, 0],
+            [x0, y0, 1]
+        ];
+
         double width = DrawingCanvas.ActualWidth;
         double height = DrawingCanvas.ActualHeight;
-        
+
         if (AffineCheckBox.IsChecked == true ||
             (AffineCheckBox.IsChecked == false && ProjectiveCheckBox.IsChecked == false))
         {
-            double yCount = Px(y0);
-            double yCounter = 0;
-            for (double x = Px(x0); x <= width; x += _pxPerCm * xX)
+            double gridSize = _pxPerCm;
+            double cellCountX = width;
+            double cellCountY = height;
+            for (int i = 0; i <= cellCountX; i++)
             {
-                DrawLine(x, yCount, x + Px(xX), yCount + Px(yX), Brushes.LimeGreen, AxisThickness);
-                yCount += Px(yX);
-                yCounter++;
-            }
-
-            for (double y =Px(y0); y <= height; y += _pxPerCm * yY)
-            {
-                DrawLine(0, y, width, y + yCounter * Px(yX), Brushes.Gray, CoordLineThickness);
-            }
-
-            double xCount = Px(x0);
-            double xCounter = 0;
-            for (double y =  Px(y0); y <= height; y += _pxPerCm * yY)
-            {
-                DrawLine(xCount, y, xCount + Px(xY), y + Px(yY), Brushes.Red, AxisThickness);
-                xCount += Px(xY);
-                xCounter++;
-            }
-
-            for (double x =  Px(x0); x <= width; x += _pxPerCm * xX)
-            {
-                DrawLine(x, 0, x + xCounter * Px(xY), height, Brushes.Gray,
-                    CoordLineThickness); // Вертикальні лінії 
+                if (i == 0)
+                {
+                    DrawAffineLine(matrixAffine, x0, y0 + i * gridSize, cellCountX * gridSize, i * gridSize,
+                        Brushes.LimeGreen, AxisThickness);
+                    DrawAffineLine(matrixAffine, i * gridSize+ x0, y0, i * gridSize, cellCountY * gridSize,
+                        Brushes.Red, AxisThickness);
+                }
+                else
+                {
+                    DrawAffineLine(matrixAffine, x0, y0 + i * gridSize, cellCountX * gridSize, i * gridSize,
+                        Brushes.LightGray, LineThickness);
+                    DrawAffineLine(matrixAffine, x0 + i * gridSize, y0, i * gridSize, cellCountY * gridSize,
+                        Brushes.LightGray, LineThickness);
+                }
             }
         }
         else if (ProjectiveCheckBox.IsChecked == true)
@@ -474,6 +471,27 @@ public partial class MainWindow : Window
 // Додаємо лінію до Canvas 
         DrawingCanvas.Children.Add(wpfLine);
     }
+    
+    private void DrawAffineLine(double[][] matrixAffine, double x1, double y1, double x2,
+        double y2, Brush color, double thickness)
+    {
+// Перетворюємо точки лінії за допомогою проективної матриці 
+        var p1 = AffineTransformation(new Point(x1, y1), matrixAffine);
+        var p2 = AffineTransformation(new Point(x2, y2), matrixAffine);
+        var customLine = new Line(p1.X, p1.Y, p2.X, p2.Y, color);
+// Створюємо WPF-лінію 
+        var wpfLine = new System.Windows.Shapes.Line()
+        {
+            X1 = customLine.StartPoint.X,
+            Y1 = customLine.StartPoint.Y,
+            X2 = customLine.EndPoint.X,
+            Y2 = customLine.EndPoint.Y,
+            Stroke = color,
+            StrokeThickness = thickness
+        };
+// Додаємо лінію до Canvas 
+        DrawingCanvas.Children.Add(wpfLine);
+    }
 
     private void DrawArc(double x, double y, double radius, double startAngle, double endAngle, Brush color,
         double thickness, double[][] matrixAffine, double[][] matrixProjective, double[][] matrixScale)
@@ -510,28 +528,19 @@ public partial class MainWindow : Window
                 );
             }
             
-
             Pbeg = ScalePoint(Pbeg, matrixScale);
             Pend = ScalePoint(Pend, matrixScale);
             
-          
-
             if (AffineCheckBox.IsChecked == true)
             {
-                Pbeg = AffineTransformation(Pbeg, matrixAffine);
-                Pend = AffineTransformation(Pend, matrixAffine);
+                Pbeg = AffineArcTransformation(Pbeg, matrixAffine);
+                Pend = AffineArcTransformation(Pend, matrixAffine);
             }
             else if (ProjectiveCheckBox.IsChecked == true)
             {
                 Pbeg = ProjectiveTransformation(Pbeg, matrixProjective);
                 Pend = ProjectiveTransformation(Pend, matrixProjective);
             }
-
-            Console.WriteLine(Pbeg.X/_pxPerCm);
-            Console.WriteLine(Pbeg.Y/_pxPerCm);
-            Console.WriteLine(Pend.X/_pxPerCm);
-            Console.WriteLine(Pend.Y/_pxPerCm);
-
             
             DrawLine(Pbeg.X, Pbeg.Y, Pend.X, Pend.Y, color, thickness);
             
@@ -565,9 +574,18 @@ public partial class MainWindow : Window
     private Point AffineTransformation(Point point, double[][] transformationMatrix)
     {
         double newX = transformationMatrix[0][0] * point.X + transformationMatrix[1][0] * point.Y +
-                      transformationMatrix[2][0] * Px(1);
+                      transformationMatrix[2][0] * 1;
         double newY = transformationMatrix[0][1] * point.X + transformationMatrix[1][1] * point.Y +
-                      transformationMatrix[2][1] * Px(1);
+                      transformationMatrix[2][1] * 1;
+        return new Point(newX, newY);
+    }
+    
+    private Point AffineArcTransformation(Point point, double[][] transformationMatrix)
+    {
+        double newX = transformationMatrix[0][0] * point.X + transformationMatrix[1][0] * point.Y +
+                      transformationMatrix[2][0] * 1;
+        double newY = transformationMatrix[0][1] * point.X + transformationMatrix[1][1] * point.Y +
+                      transformationMatrix[2][1] * 1;
         return new Point(newX, newY);
     }
 
